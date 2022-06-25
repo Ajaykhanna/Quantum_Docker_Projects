@@ -12,7 +12,6 @@
 import re
 import argparse
 import numpy as np
-from matplotlib import ticker
 import matplotlib.pyplot as plt
 
 # Printing the title of the program and the author's name.
@@ -42,7 +41,6 @@ def pattern_search(pattern,filename):
     elif pattern == "SCF Done:":
         for line in filename:
             for match in re.finditer(pattern, line):
-                #print(line.split()[4])
                 dummy.append(line.split()[4])
     else:
         for line in filename:
@@ -60,49 +58,41 @@ search_patterns = ["SCF Done:",
                    "RMS     Displacement"]
 
 # Searching for the pattern in the file and returning a list of values that match the pattern.
-scf_energy = np.array(pattern_search(search_patterns[0], open(args.input.name)))
+scf_energy = np.array(pattern_search(search_patterns[0], open(args.input.name)), dtype='float64')
 delta_e    = np.array(pattern_search(search_patterns[1], open(args.input.name)))
-delta_e    = np.array([item.replace(" ",",") for item in delta_e])
-max_force  = np.array(pattern_search(search_patterns[1], open(args.input.name)))
-rms_force  = np.array(pattern_search(search_patterns[2], open(args.input.name)))
-max_displ  = np.array(pattern_search(search_patterns[3], open(args.input.name)))
-rms_displ  = np.array(pattern_search(search_patterns[4], open(args.input.name)))
+delta_e    = np.array([item.replace(" ",",") for item in delta_e], dtype='float64')
+max_force  = np.array(pattern_search(search_patterns[1], open(args.input.name)), dtype='float64')
+rms_force  = np.array(pattern_search(search_patterns[2], open(args.input.name)), dtype='float64')
+max_displ  = np.array(pattern_search(search_patterns[3], open(args.input.name)), dtype='float64')
+rms_displ  = np.array(pattern_search(search_patterns[4], open(args.input.name)), dtype='float64')
 
 # Creating a 2x3 grid of plots.
-#formatter = ticker.ScalarFormatter(useMathText=True)
-#formatter.set_scientific(True) 
-#formatter.set_powerlimits((1,1))
-
 fig, axs = plt.subplots(2, 3, figsize=(12, 5))
-#axs[0][1].set_visible(False)
 
-axs[0, 0].plot(np.arange(1, len(scf_energy)+1), scf_energy, 'tab:red',)
+axs[0, 0].plot(np.arange(1, len(scf_energy)+1), scf_energy.round(3), 'tab:red',)
 axs[0, 0].set_title('SCF Energy (AU)') # Ploting the SCF Energy
 
-axs[0, 1].plot(np.arange(1, len(scf_energy)+1), delta_e, 'tab:grey',)
+axs[0, 1].plot(np.arange(1, len(scf_energy)+1), delta_e.round(3), 'tab:grey',)
 axs[0, 1].set_title('Delta-E') # Ploting the Delta-E
 
-axs[0, 2].plot(np.arange(1, len(scf_energy)+1), max_force, 'tab:orange')
+axs[0, 2].plot(np.arange(1, len(scf_energy)+1), max_force.round(3), 'tab:orange')
 axs[0, 2].set_title('Max. Force') # Ploting the Max. Force
 
-axs[1, 0].plot(np.arange(1, len(scf_energy)+1), max_displ, 'tab:green')
+axs[1, 0].plot(np.arange(1, len(scf_energy)+1), max_displ.round(3), 'tab:green')
 axs[1, 0].set_title('Max. Displacement') # Ploting the Max. Displacement
 
-axs[1, 1].plot(np.arange(1, len(scf_energy)+1), rms_force, 'tab:blue')
+axs[1, 1].plot(np.arange(1, len(scf_energy)+1), rms_force.round(3), 'tab:blue')
 axs[1, 1].set_title('RMS Force') # Ploting the RMS Force
 
-axs[1, 2].plot(np.arange(1, len(scf_energy)+1), rms_displ, 'tab:pink')
+axs[1, 2].plot(np.arange(1, len(scf_energy)+1), rms_displ.round(3), 'tab:pink')
 axs[1, 2].set_title('RMS Displacement') # Ploting the RMS Displacement
 
 # Setting the x and y labels for each of the subplots.
-for ax in axs.flat:
+for ax in axs.flat[3:6]:
     ax.set_xlabel('#Cycles',fontsize = 10)
     ax.set_ylabel('Progress', fontsize = 10)
-    #ax.set_xticks(np.arange(1, len(rms_force)//2))
-    #ax.set_yscale('log')
+for ax in axs.flat:
     ax.grid(visible=True, axis='both', linestyle='-.')
-    #ax.label_outer()
-    #ax.yaxis.set_major_formatter(formatter)
 
 # Saving the plot as an image file.
 fig.tight_layout()
